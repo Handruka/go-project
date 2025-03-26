@@ -8,19 +8,15 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func CreatDB(install bool) { // функция создает файл базы данных и создает таблицу scheduler в файле
+func CreatDB(install bool) (*sql.DB, error) { // функция создает файл базы данных и создает таблицу scheduler в файле
 
-	if install { // если install равен true(файл базы данных не существует)
+	if install {
 		_, err := os.Create(DBFile) // создаём файл scheduler.db в пути dbfile
 		if err != nil {
 			log.Fatal(err)
 		}
-		db, err := sql.Open("sqlite", "./scheduler.db")
 
-		if err != nil {
-			log.Fatal(err)
-		}
-		createTable := `CREATE TABLE scheduler (
+		createTable := `CREATE TABLE IF NOT EXISTS scheduler (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		date INTEGER,
 		title TEXT NOT NULL,
@@ -37,7 +33,11 @@ func CreatDB(install bool) { // функция создает файл базы 
 		if err != nil {
 			log.Fatal(err)
 		}
-		db.Close()
-
 	}
+	db, err := sql.Open("sqlite", "./scheduler.db")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	return db, err
 }
